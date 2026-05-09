@@ -1,0 +1,166 @@
+/**
+ * Node builder - maps Shape Vocabulary types to draw.io style strings.
+ *
+ * Shape Vocabulary (from fireworks-tech-graph) is mapped to draw.io shapes:
+ * - process → rounded rect
+ * - decision → rhombus (diamond)
+ * - database → cylinder3
+ * - user → ellipse with label
+ * - etc.
+ */
+
+import type { StyleTheme } from '../styles/index.js';
+
+/** Supported node shape types from the Shape Vocabulary */
+export type NodeShapeType =
+  | 'process'        // Rounded rect (standard box)
+  | 'decision'       // Diamond / rhombus
+  | 'database'       // Cylinder
+  | 'user'           // Circle / ellipse (actor)
+  | 'llm'            // Rounded rect with accent
+  | 'agent'          // Hexagon
+  | 'memory-short'   // Rounded rect, dashed border
+  | 'memory-long'    // Cylinder (database shape)
+  | 'vector-store'   // Cylinder with grid
+  | 'tool'           // Rect with gear-like styling
+  | 'api'            // Hexagon (single border)
+  | 'queue'          // Horizontal tube / parallelogram
+  | 'document'       // Folded-corner rect
+  | 'browser'        // Rect with titlebar dots
+  | 'data'           // Parallelogram (I/O)
+  | 'external'       // Dashed-border rect
+  | 'container'      // Group/container
+  | 'start'          // Filled circle (state machine)
+  | 'end'            // Double circle (state machine)
+  | 'state'          // Rounded rect (state machine)
+  | 'entity'         // Rect (ER entity)
+  | 'relationship'   // Diamond (ER relationship)
+  | 'class'          // Rect with compartments (UML class)
+  | 'lifeline'       // Vertical dashed line (sequence)
+  | 'note'           // Folded-corner note shape
+  | 'cloud'          // Cloud shape
+  | 'card'           // Card shape
+  | 'raw';           // No shape mapping (use raw style overrides)
+
+/**
+ * Map a Shape Vocabulary type to a draw.io base style string.
+ * These are the structural shape properties only; colors come from the theme.
+ */
+function shapeTypeToBaseStyle(type: NodeShapeType): string {
+  switch (type) {
+    case 'process':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=12;';
+    case 'decision':
+      return 'rhombus;whiteSpace=wrap;html=1;';
+    case 'database':
+      return 'shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;';
+    case 'user':
+      return 'ellipse;whiteSpace=wrap;html=1;';
+    case 'llm':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=15;shadow=1;';
+    case 'agent':
+      return 'shape=hexagon;perimeter=hexagonPerimeterSize;whiteSpace=wrap;html=1;fixedSize=1;';
+    case 'memory-short':
+      return 'rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=5 3;arcSize=8;';
+    case 'memory-long':
+      return 'shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;';
+    case 'vector-store':
+      return 'shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;';
+    case 'tool':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=8;';
+    case 'api':
+      return 'shape=hexagon;perimeter=hexagonPerimeterSize;whiteSpace=wrap;html=1;fixedSize=1;size=15;';
+    case 'queue':
+      return 'shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;';
+    case 'document':
+      return 'shape=document;whiteSpace=wrap;html=1;boundedLbl=1;';
+    case 'browser':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=6;';
+    case 'data':
+      return 'shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;';
+    case 'external':
+      return 'rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 4;arcSize=8;';
+    case 'container':
+      return 'rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=none;';
+    case 'start':
+      return 'ellipse;whiteSpace=wrap;html=1;aspect=fixed;';
+    case 'end':
+      return 'ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=3;';
+    case 'state':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=20;';
+    case 'entity':
+      return 'rounded=0;whiteSpace=wrap;html=1;';
+    case 'relationship':
+      return 'rhombus;whiteSpace=wrap;html=1;';
+    case 'class':
+      return 'swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;';
+    case 'lifeline':
+      return 'shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;outlineConnect=0;size=40;';
+    case 'note':
+      return 'shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;';
+    case 'cloud':
+      return 'ellipse;shape=cloud;whiteSpace=wrap;html=1;';
+    case 'card':
+      return 'rounded=1;whiteSpace=wrap;html=1;arcSize=10;shadow=1;';
+    case 'raw':
+      return 'rounded=0;whiteSpace=wrap;html=1;';
+    default:
+      return 'rounded=1;whiteSpace=wrap;html=1;';
+  }
+}
+
+/**
+ * Resolve the full drawio style string for a node.
+ * Combines the shape type base style with theme colors.
+ */
+export function resolveNodeStyle(type: NodeShapeType, theme: StyleTheme): string {
+  const baseStyle = shapeTypeToBaseStyle(type);
+
+  // Build color properties from theme
+  const parts: string[] = [baseStyle];
+
+  // Skip fillColor for container and start types
+  if (type === 'start') {
+    parts.push('fillColor=#000000;');
+    parts.push('strokeColor=#000000;');
+  } else if (type === 'end') {
+    parts.push('fillColor=#000000;');
+    parts.push('strokeColor=#000000;');
+  } else if (type === 'container') {
+    parts.push(`strokeColor=${theme.strokeColor};`);
+    parts.push(`fontColor=${theme.textSecondary};`);
+  } else if (type === 'class') {
+    parts.push(`fillColor=${theme.fillColor};`);
+    parts.push(`strokeColor=${theme.strokeColor};`);
+    parts.push(`fontColor=${theme.textPrimary};`);
+  } else {
+    parts.push(`fillColor=${theme.fillColor};`);
+    parts.push(`strokeColor=${theme.strokeColor};`);
+    parts.push(`fontColor=${theme.textPrimary};`);
+  }
+
+  parts.push(`fontSize=${theme.fontSize};`);
+
+  return parts.join('');
+}
+
+/**
+ * Resolve edge style (deprecated - use edge-builder.ts instead).
+ * Kept for backward compatibility.
+ */
+export function resolveEdgeStyle(flowType: string, theme: StyleTheme): string {
+  const colorMap: Record<string, string> = {
+    primary: theme.arrowColors?.primary ?? '#2563eb',
+    control: theme.arrowColors?.control ?? '#ea580c',
+    memoryRead: theme.arrowColors?.memoryRead ?? '#059669',
+    memoryWrite: theme.arrowColors?.memoryWrite ?? '#059669',
+    async: theme.arrowColors?.async ?? '#6b7280',
+    embedding: theme.arrowColors?.embedding ?? '#7c3aed',
+    feedback: theme.arrowColors?.feedback ?? '#7c3aed',
+  };
+
+  const color = colorMap[flowType] ?? colorMap.primary;
+  const isDashed = flowType === 'memoryWrite' || flowType === 'async';
+
+  return `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=${color};strokeWidth=1.5;${isDashed ? 'dashed=1;dashPattern=5 3;' : ''}`;
+}

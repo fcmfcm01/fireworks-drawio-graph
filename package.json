@@ -1,0 +1,64 @@
+{
+  "name": "fireworks-drawio-graph",
+  "version": "1.0.0",
+  "description": "Generate production-quality draw.io (mxGraphModel XML) technical diagrams with 7 built-in styles. Architecture, flowchart, sequence, ER, class diagrams and more.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "fireworks-drawio-graph": "./dist/scripts/generate-diagram.js",
+    "fireworks-drawio-mcp": "./dist/mcp/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/scripts/generate-diagram.ts",
+    "start": "node dist/scripts/generate-diagram.js",
+    "mcp": "node dist/mcp/server.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/vitest run",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "drawio",
+    "diagram",
+    "architecture",
+    "flowchart",
+    "sequence",
+    "uml",
+    "mcp",
+    "ai",
+    "visualization",
+    "hermes-skill"
+  ],
+  "author": "cafeng <fcmfcm01@users.noreply.github.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fcmfcm01/fireworks-drawio-graph.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fcmfcm01/fireworks-drawio-graph/issues"
+  },
+  "homepage": "https://github.com/fcmfcm01/fireworks-drawio-graph#readme",
+  "files": [
+    "dist",
+    "SKILL.md",
+    "README.md",
+    "LICENSE",
+    "references/"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "commander": "^13.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
