@@ -1,0 +1,44 @@
+<mxfile host="fireworks-drawio-graph" modified="2024-01-01T00:00:00.000Z" agent="fireworks-drawio-graph" version="1.0.0" type="device">
+  <diagram id="diagram-1" name="Page-1">
+    <?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+      <mxCell id="title" value="AWS Serverless App" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+        <mxGeometry x="450" y="10" width="300" height="30" as="geometry"/>
+      </mxCell>
+      <mxCell id="70" value="CloudFront"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;"
+        vertex="1" parent="1">
+        <mxGeometry x="400" y="64" width="60" height="60" as="geometry"/>
+      </mxCell>
+      <mxCell id="71" value="API Gateway"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;"
+        vertex="1" parent="1">
+        <mxGeometry x="400" y="184" width="60" height="60" as="geometry"/>
+      </mxCell>
+      <mxCell id="72" value="Lambda"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.lambda;"
+        vertex="1" parent="1">
+        <mxGeometry x="248" y="304" width="60" height="60" as="geometry"/>
+      </mxCell>
+      <mxCell id="73" value="Lambda"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.lambda;"
+        vertex="1" parent="1">
+        <mxGeometry x="552" y="304" width="60" height="60" as="geometry"/>
+      </mxCell>
+      <mxCell id="74" value="DynamoDB"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#C925D1;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.dynamodb;"
+        vertex="1" parent="1">
+        <mxGeometry x="248" y="424" width="60" height="60" as="geometry"/>
+      </mxCell>
+      <mxCell id="75" value="S3"
+        style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#3F8624;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;"
+        vertex="1" parent="1">
+        <mxGeometry x="552" y="424" width="60" height="60" as="geometry"/>
+      </mxCell>
+  </root>
+</mxGraphModel>
+  </diagram>
+</mxfile>
