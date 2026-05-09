@@ -110,16 +110,64 @@ function shapeTypeToBaseStyle(type: NodeShapeType): string {
 }
 
 /**
+ * Map semantic node types to accent fill + stroke color pairs.
+ * Uses theme.accents for fill and arrowColors for stroke to ensure
+ * each semantic type has a visually distinct color.
+ */
+function getTypeAccentColors(type: NodeShapeType, theme: StyleTheme): { fill: string; stroke: string } | null {
+  const a = theme.accents;
+  const ar = theme.arrowColors;
+
+  switch (type) {
+    // AI / LLM types → purple
+    case 'llm':
+      return { fill: a.purple, stroke: ar.embedding };
+    // Agent / orchestrator → orange
+    case 'agent':
+      return { fill: a.orange, stroke: ar.control };
+    // Storage / data types → green
+    case 'database':
+    case 'memory-long':
+    case 'vector-store':
+      return { fill: a.green, stroke: ar.memoryRead };
+    // API / gateway → blue
+    case 'api':
+      return { fill: a.blue, stroke: ar.primary };
+    // Tool / function → teal
+    case 'tool':
+    case 'queue':
+      return { fill: a.teal, stroke: ar.memoryWrite };
+    // Short-term memory → red (dashed handled by base style)
+    case 'memory-short':
+      return { fill: a.red, stroke: ar.control };
+    // Document / file → orange variant
+    case 'document':
+    case 'note':
+      return { fill: a.orange, stroke: ar.control };
+    // External service → red dashed (handled by base style)
+    case 'external':
+      return { fill: a.red, stroke: ar.control };
+    // Decision → yellow/amber tint
+    case 'decision':
+      return { fill: a.orange, stroke: ar.control };
+    default:
+      return null;
+  }
+}
+
+/**
  * Resolve the full drawio style string for a node.
  * Combines the shape type base style with theme colors.
+ * Semantic types (llm, agent, database, api, tool, etc.) automatically
+ * get distinct accent colors from the theme palette.
  */
 export function resolveNodeStyle(type: NodeShapeType, theme: StyleTheme): string {
   const baseStyle = shapeTypeToBaseStyle(type);
 
-  // Build color properties from theme
   const parts: string[] = [baseStyle];
 
-  // Skip fillColor for container and start types
+  const accent = getTypeAccentColors(type, theme);
+
   if (type === 'start') {
     parts.push('fillColor=#000000;');
     parts.push('strokeColor=#000000;');
@@ -133,6 +181,13 @@ export function resolveNodeStyle(type: NodeShapeType, theme: StyleTheme): string
     parts.push(`fillColor=${theme.fillColor};`);
     parts.push(`strokeColor=${theme.strokeColor};`);
     parts.push(`fontColor=${theme.textPrimary};`);
+  } else if (accent) {
+    parts.push(`fillColor=${accent.fill};`);
+    parts.push(`strokeColor=${accent.stroke};`);
+    parts.push(`fontColor=${theme.textPrimary};`);
+    if (type === 'llm' || type === 'agent') {
+      parts.push('shadow=1;');
+    }
   } else {
     parts.push(`fillColor=${theme.fillColor};`);
     parts.push(`strokeColor=${theme.strokeColor};`);
