@@ -10,7 +10,7 @@
 
 import { escapeAttrValue } from '../utils/xml-escape.js';
 import { nextId } from '../utils/id-generator.js';
-import { resolveNodeStyle, resolveEdgeStyle } from './node-builder.js';
+import { resolveNodeStyle } from './node-builder.js';
 import type { NodeShapeType } from './node-builder.js';
 import { resolveEdgeDrawioStyle } from './edge-builder.js';
 import type { EdgeFlowType } from './edge-builder.js';
@@ -114,7 +114,6 @@ export class DiagramBuilder {
   private lines: string[] = [];
   private styleTheme: StyleTheme;
   private config: Required<Omit<DiagramConfig, 'title'>> & { title: string };
-  private cellCount = 1; // 0 and 1 are reserved root cells
 
   constructor(config: DiagramConfig) {
     this.config = {
@@ -133,7 +132,7 @@ export class DiagramBuilder {
    * Returns the cell ID for use in edges.
    */
   addNode(def: NodeDef): string {
-    const id = def.id ?? String(++this.cellCount);
+    const id = def.id ?? nextId();
     const parent = def.parent ?? '1';
     const x = this.config.gridSnap ? applyGridSnap(def.x) : def.x;
     const y = this.config.gridSnap ? applyGridSnap(def.y) : def.y;
@@ -184,7 +183,7 @@ export class DiagramBuilder {
    * Returns the cell ID.
    */
   addEdge(def: EdgeDef): string {
-    const id = def.id ?? String(++this.cellCount);
+    const id = def.id ?? nextId();
     const parent = def.parent ?? '1';
     const flowType = def.flowType ?? 'primary';
     const edgeStyleType = def.edgeStyle ?? 'orthogonal';
@@ -218,7 +217,7 @@ export class DiagramBuilder {
    * Returns the cell ID.
    */
   addGroup(def: GroupDef): string {
-    const id = def.id ?? String(++this.cellCount);
+    const id = def.id ?? nextId();
     const parent = def.parent ?? '1';
     const x = this.config.gridSnap ? applyGridSnap(def.x) : def.x;
     const y = this.config.gridSnap ? applyGridSnap(def.y) : def.y;
@@ -338,15 +337,18 @@ export class DiagramBuilder {
         map.set(part.substring(0, eqIdx).trim(), part.substring(eqIdx + 1).trim());
       }
     }
-    // Apply overrides
+    // Apply overrides (sanitize values to prevent XML attribute injection)
     for (const [key, val] of Object.entries(overrides)) {
-      map.set(key, val);
+      // Block characters that could break out of the style="" attribute
+      const safeKey = key.replace(/["'>]/g, '');
+      const safeVal = val.replace(/["'>]/g, '');
+      map.set(safeKey, safeVal);
     }
     // Rebuild
     const entries: string[] = [];
-    for (const [key, val] of map) {
+    map.forEach((val, key) => {
       entries.push(`${key}=${val}`);
-    }
+    });
     return entries.join(';');
   }
 
@@ -374,7 +376,6 @@ export class DiagramBuilder {
    */
   reset(config?: DiagramConfig): void {
     this.lines = [];
-    this.cellCount = 1;
     if (config) {
       this.config = {
         style: config.style,

@@ -17,6 +17,8 @@ import { z } from 'zod';
 import { DiagramBuilder } from '../builder/diagram-builder.js';
 import { getStyleTheme, getAllStyles, getStyleNames } from '../styles/index.js';
 import { escapeAttrValue } from '../utils/xml-escape.js';
+import { safeWritePath } from './tools.js';
+import { getAllDiagramTypes } from '../registry.js';
 import { createArchitectureDiagram } from '../templates/architecture.js';
 import { createFlowchart } from '../templates/flowchart.js';
 import { createSequenceDiagram } from '../templates/sequence.js';
@@ -30,6 +32,10 @@ import {
   listDiagramTypesDescription,
   generateFromTemplateSchema, generateFromTemplateDescription,
 } from './tools.js';
+
+// Input size limits
+const MAX_XML_SIZE = 1_000_000; // 1MB
+const MAX_OPERATIONS = 50;
 
 // Session state
 let currentXml: string = '';
@@ -46,6 +52,10 @@ server.registerTool(
   { description: createDiagramDescription, inputSchema: createDiagramSchema },
   async ({ xml, title, style }) => {
     try {
+      // Size limit to prevent DoS
+      if (xml.length > MAX_XML_SIZE) {
+        return { content: [{ type: 'text', text: `Error: XML exceeds ${MAX_XML_SIZE} character limit. Got ${xml.length}.` }], isError: true };
+      }
       currentXml = xml;
       currentBuilder = null; // Reset builder for manual XML
       return {
@@ -69,6 +79,9 @@ server.registerTool(
       if (!currentXml) {
         return { content: [{ type: 'text', text: 'Error: No diagram to edit. Create one first.' }], isError: true };
       }
+      if (operations.length > MAX_OPERATIONS) {
+        return { content: [{ type: 'text', text: `Error: Too many operations (max ${MAX_OPERATIONS}). Got ${operations.length}.` }], isError: true };
+      }
       // Simple text-based editing (find/replace by cell ID)
       // For production, use DOM parsing as in next-ai-draw-io
       const opResults: string[] = [];
@@ -78,7 +91,7 @@ server.registerTool(
       return {
         content: [{
           type: 'text',
-          text: `Edit operations queued:\n${opResults.join('\n')}\n\nNote: For full editing, use the draw.io editor or regenerate with create_diagram.`,
+          text: `Edit operations queued:\n${opResults.join('\n')}\n\nNote: Text-based editing is limited. For full editing, use the draw.io editor or regenerate with create_diagram.`,
         }],
       };
     } catch (error) {
@@ -106,16 +119,22 @@ server.registerTool(
   async ({ path, format }) => {
     try {
       const fs = await import('node:fs/promises');
-      const nodePath = await import('node:path');
 
       if (!currentXml) {
         return { content: [{ type: 'text', text: 'Error: No diagram to export.' }], isError: true };
       }
 
-      const ext = nodePath.extname(path).toLowerCase();
+      // Validate path is safe (no traversal outside cwd/tmp)
+      let filePath: string;
+      try {
+        filePath = safeWritePath(path);
+      } catch (pathErr) {
+        return { content: [{ type: 'text', text: `Error: ${pathErr instanceof Error ? pathErr.message : String(pathErr)}` }], isError: true };
+      }
+
+      const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase();
       const detectedFormat = format || (ext === '.svg' ? 'svg' : ext === '.png' ? 'png' : 'drawio');
 
-      let filePath = path;
       let content: string;
 
       if (detectedFormat === 'drawio') {
@@ -127,13 +146,12 @@ server.registerTool(
         content = currentXml;
       }
 
-      const absolutePath = nodePath.resolve(filePath);
-      await fs.writeFile(absolutePath, content, 'utf-8');
+      await fs.writeFile(filePath, content, 'utf-8');
 
       return {
         content: [{
           type: 'text',
-          text: `Diagram exported successfully!\n\nFile: ${absolutePath}\nFormat: ${detectedFormat}\nSize: ${content.length} characters`,
+          text: `Diagram exported successfully!\n\nFile: ${filePath}\nFormat: ${detectedFormat}\nSize: ${content.length} characters`,
         }],
       };
     } catch (error) {
@@ -158,20 +176,9 @@ server.registerTool(
   'list_diagram_types',
   { description: listDiagramTypesDescription, inputSchema: {} },
   async () => {
-    const types = [
-      'architecture - Horizontal layers: Client → Gateway → Services → Data',
-      'flowchart - Sequential steps: process, decision, data, start/end',
-      'sequence - Time-ordered messages between participants (lifelines)',
-      'data-flow - Data transformation with labeled edges',
-      'class-diagram - UML class boxes with attributes/methods',
-      'er-diagram - Entity-Relationship with cardinality',
-      'state-machine - State transitions with guards and actions',
-      'mind-map - Radial layout from central concept (manual XML)',
-      'timeline - Horizontal time axis with bars/milestones (manual XML)',
-      'network-topology - Physical/logical network devices (manual XML)',
-      'use-case - Actor + use case ellipses (manual XML)',
-      'comparison - Feature matrix with columns/rows (manual XML)',
-    ];
+    const types = getAllDiagramTypes().map(t =>
+      `${t.key} - ${t.description}${t.hasTemplate ? '' : ' (manual XML)'}`
+    );
     return { content: [{ type: 'text', text: `Supported diagram types:\n\n${types.join('\n')}` }] };
   }
 );
@@ -183,20 +190,26 @@ server.registerTool(
   async ({ type, title, style, data }) => {
     try {
       const styleNum = style ?? 1;
+      let parsedData: Record<string, unknown>;
+      try {
+        parsedData = JSON.parse(data);
+      } catch (parseErr) {
+        return { content: [{ type: 'text', text: `Error: Invalid JSON in data parameter: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}` }], isError: true };
+      }
       let builder: DiagramBuilder;
 
       switch (type) {
         case 'architecture':
-          builder = createArchitectureDiagram({ ...JSON.parse(data), title, style: styleNum });
+          builder = createArchitectureDiagram({ ...parsedData, title, style: styleNum } as any);
           break;
         case 'flowchart':
-          builder = createFlowchart({ ...JSON.parse(data), title, style: styleNum });
+          builder = createFlowchart({ ...parsedData, title, style: styleNum } as any);
           break;
         case 'sequence':
-          builder = createSequenceDiagram({ ...JSON.parse(data), title, style: styleNum });
+          builder = createSequenceDiagram({ ...parsedData, title, style: styleNum } as any);
           break;
         case 'data-flow':
-          builder = createDataFlowDiagram({ ...JSON.parse(data), title, style: styleNum });
+          builder = createDataFlowDiagram({ ...parsedData, title, style: styleNum } as any);
           break;
         case 'class-diagram':
           // Class diagram template would go here

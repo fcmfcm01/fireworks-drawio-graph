@@ -5,6 +5,18 @@
  */
 
 import { z } from 'zod';
+import * as path from 'node:path';
+
+/** Validate that a file path is safe to write to (prevents path traversal). */
+export function safeWritePath(inputPath: string): string {
+  const resolved = path.resolve(inputPath);
+  const cwd = process.cwd();
+  // Only allow writing under cwd or /tmp
+  if (!resolved.startsWith(cwd) && !resolved.startsWith('/tmp')) {
+    throw new Error(`Path traversal blocked: ${inputPath} resolves outside allowed directories (cwd or /tmp)`);
+  }
+  return resolved;
+}
 
 /** Tool: create_diagram */
 export const createDiagramSchema = {
@@ -89,7 +101,7 @@ export const generateFromTemplateSchema = {
   type: z.enum([
     'architecture', 'flowchart', 'sequence', 'data-flow',
     'class-diagram', 'er-diagram', 'state-machine'
-  ]).describe('Diagram type'),
+  ] as const).describe('Diagram type'),
   title: z.string().describe('Diagram title'),
   style: z.number().min(1).max(7).optional().describe('Style theme number (1-7)'),
   data: z.string().describe('JSON string with diagram-specific data (nodes, edges, layers, etc.)'),

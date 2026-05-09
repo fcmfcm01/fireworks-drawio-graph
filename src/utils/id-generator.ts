@@ -4,13 +4,13 @@
  * IDs "0" and "1" are reserved (root cells).
  */
 
-let counter = 1;
+let counter = 2; // Start from 2 (0 and 1 are reserved for root cells)
 
 /**
  * Reset the ID counter (useful for testing or starting a fresh diagram).
  */
 export function resetIdCounter(): void {
-  counter = 1;
+  counter = 2;
 }
 
 /**

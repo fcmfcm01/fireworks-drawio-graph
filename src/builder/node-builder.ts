@@ -143,24 +143,3 @@ export function resolveNodeStyle(type: NodeShapeType, theme: StyleTheme): string
 
   return parts.join('');
 }
-
-/**
- * Resolve edge style (deprecated - use edge-builder.ts instead).
- * Kept for backward compatibility.
- */
-export function resolveEdgeStyle(flowType: string, theme: StyleTheme): string {
-  const colorMap: Record<string, string> = {
-    primary: theme.arrowColors?.primary ?? '#2563eb',
-    control: theme.arrowColors?.control ?? '#ea580c',
-    memoryRead: theme.arrowColors?.memoryRead ?? '#059669',
-    memoryWrite: theme.arrowColors?.memoryWrite ?? '#059669',
-    async: theme.arrowColors?.async ?? '#6b7280',
-    embedding: theme.arrowColors?.embedding ?? '#7c3aed',
-    feedback: theme.arrowColors?.feedback ?? '#7c3aed',
-  };
-
-  const color = colorMap[flowType] ?? colorMap.primary;
-  const isDashed = flowType === 'memoryWrite' || flowType === 'async';
-
-  return `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=${color};strokeWidth=1.5;${isDashed ? 'dashed=1;dashPattern=5 3;' : ''}`;
-}

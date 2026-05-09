@@ -11,6 +11,7 @@
 import { Command } from 'commander';
 import { DiagramBuilder } from '../builder/diagram-builder.js';
 import { getStyleNames } from '../styles/index.js';
+import { formatDiagramTypesList, getDiagramTypeKeys } from '../registry.js';
 
 const program = new Command();
 
@@ -33,6 +34,20 @@ program
     const styleNum = parseInt(opts.style, 10);
     const width = parseInt(opts.width, 10);
     const height = parseInt(opts.height, 10);
+
+    // Validate parsed integers
+    if (isNaN(styleNum) || styleNum < 1 || styleNum > 7) {
+      console.error('Error: --style must be a number between 1 and 7');
+      process.exit(1);
+    }
+    if (isNaN(width) || width < 100 || width > 10000) {
+      console.error('Error: --width must be a number between 100 and 10000');
+      process.exit(1);
+    }
+    if (isNaN(height) || height < 100 || height > 10000) {
+      console.error('Error: --height must be a number between 100 and 10000');
+      process.exit(1);
+    }
 
     console.log(`Generating ${opts.type} diagram with style ${styleNum}...`);
 
@@ -84,13 +99,18 @@ program
       }
       default:
         console.error(`Unknown diagram type: ${opts.type}`);
-        console.error('Supported: architecture, flowchart, sequence, data-flow');
+        console.error(`Supported: ${getDiagramTypeKeys().join(', ')}`);
         process.exit(1);
     }
 
-    await builder.toFile(opts.output);
-    console.log(`Diagram saved to: ${opts.output}`);
-    console.log(`Style: ${styleNum}, Type: ${opts.type}`);
+    try {
+      await builder.toFile(opts.output);
+      console.log(`Diagram saved to: ${opts.output}`);
+      console.log(`Style: ${styleNum}, Type: ${opts.type}`);
+    } catch (writeErr) {
+      console.error(`Error writing file: ${writeErr instanceof Error ? writeErr.message : String(writeErr)}`);
+      process.exit(1);
+    }
   });
 
 program
@@ -108,17 +128,8 @@ program
   .command('types')
   .description('List supported diagram types')
   .action(() => {
-    const types = [
-      'architecture   - Horizontal layers: Client → Gateway → Services → Data',
-      'flowchart      - Sequential steps: process, decision, data, start/end',
-      'sequence       - Time-ordered messages between participants',
-      'data-flow      - Data transformation with labeled edges',
-      'class-diagram  - UML class boxes (use --data JSON)',
-      'er-diagram     - Entity-Relationship (use --data JSON)',
-      'state-machine  - State transitions (use --data JSON)',
-    ];
     console.log('Supported diagram types:\n');
-    for (const t of types) {
+    for (const t of formatDiagramTypesList()) {
       console.log(`  ${t}`);
     }
   });

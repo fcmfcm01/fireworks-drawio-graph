@@ -21,7 +21,7 @@ export type { EdgeFlowType, EdgeStyleVariant } from './builder/edge-builder.js';
 
 // Layout engine
 export {
-  applyGridSnap, snapX, snapY, layoutRow, layoutGrid, layoutLayers, layoutLifelines,
+  applyGridSnap, layoutLayers,
   HORIZONTAL_SPACING, VERTICAL_SPACING, CANVAS_MARGIN
 } from './builder/layout-engine.js';
 

@@ -132,10 +132,3 @@ export function layoutLifelines(
   }
   return positions;
 }
-
-/**
- * Ensure a value is at least the minimum margin.
- */
-export function ensureMargin(value: number, margin: number = CANVAS_MARGIN): number {
-  return Math.max(value, margin);
-}

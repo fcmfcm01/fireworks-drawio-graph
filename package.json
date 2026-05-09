@@ -5,6 +5,12 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": {
     "fireworks-drawio-graph": "./dist/scripts/generate-diagram.js",
     "fireworks-drawio-mcp": "./dist/mcp/server.js"
@@ -44,8 +50,7 @@
     "dist",
     "SKILL.md",
     "README.md",
-    "LICENSE",
-    "references/"
+    "LICENSE"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
