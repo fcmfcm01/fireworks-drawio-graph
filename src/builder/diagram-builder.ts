@@ -17,6 +17,9 @@ import type { EdgeFlowType } from './edge-builder.js';
 import { applyGridSnap } from './layout-engine.js';
 import { getStyleTheme } from '../styles/index.js';
 import type { StyleTheme } from '../styles/index.js';
+import { buildStencilCellXml, buildStencilGroupXml } from './stencil-node.js';
+import type { StencilNodeInput, StencilGroupInput } from '../stencils/types.js';
+import type { ProviderNodeInput, ShapeSearchResult } from '../stencils/provider-resolver.js';
 
 /** Static helper to resolve theme (avoids require() in ESM) */
 function getStyleThemeStatic(num: number): StyleTheme {
@@ -98,6 +101,30 @@ export interface GroupDef {
   /** Parent cell ID */
   parent?: string;
   /** Override style */
+  styleOverrides?: Record<string, string>;
+}
+
+/** Input for creating a shape from an external (downloaded) library */
+export interface ExternalShapeInput {
+  /** Cached library name (e.g., "digitalocean", "vmware") */
+  library: string;
+  /** Shape title to find (case-insensitive) */
+  title?: string;
+  /** Direct entry index (alternative to title) */
+  entryIndex?: number;
+  /** Display label */
+  label?: string;
+  /** X position */
+  x: number;
+  /** Y position */
+  y: number;
+  /** Override width */
+  width?: number;
+  /** Override height */
+  height?: number;
+  /** Parent cell ID (default "1") */
+  parent?: string;
+  /** Additional style overrides */
   styleOverrides?: Record<string, string>;
 }
 
@@ -248,6 +275,104 @@ export class DiagramBuilder {
     this.lines.push(`      </mxCell>`);
 
     return id;
+  }
+
+  addStencilNode(def: StencilNodeInput): string {
+    const id = nextId();
+    const x = this.config.gridSnap ? applyGridSnap(def.x) : def.x;
+    const y = this.config.gridSnap ? applyGridSnap(def.y) : def.y;
+    const xml = buildStencilCellXml(id, { ...def, x, y });
+    this.lines.push(xml);
+    return id;
+  }
+
+  addStencilGroup(def: StencilGroupInput): string {
+    const id = nextId();
+    const x = this.config.gridSnap ? applyGridSnap(def.x) : def.x;
+    const y = this.config.gridSnap ? applyGridSnap(def.y) : def.y;
+    const xml = buildStencilGroupXml(id, { ...def, x, y });
+    this.lines.push(xml);
+    return id;
+  }
+
+  async addExternalShape(def: ExternalShapeInput): Promise<string> {
+    const { loadCachedLibrary, findEntryByTitle, buildExternalShapeXml } =
+      await import('../stencils/external-loader.js');
+
+    const lib = await loadCachedLibrary(def.library);
+
+    let idx = def.entryIndex ?? -1;
+    if (def.title && idx === -1) {
+      idx = findEntryByTitle(lib, def.title);
+      if (idx === -1) {
+        const available = lib.entries.map(e => e.title).slice(0, 20).join(', ');
+        throw new Error(
+          `Shape "${def.title}" not found in library "${def.library}". Available: ${available}...`
+        );
+      }
+    }
+    if (idx === -1) {
+      throw new Error('Either title or entryIndex must be provided for external shapes');
+    }
+
+    const id = nextId();
+    const x = this.config.gridSnap ? applyGridSnap(def.x) : def.x;
+    const y = this.config.gridSnap ? applyGridSnap(def.y) : def.y;
+    const xml = buildExternalShapeXml(id, lib, idx, x, y, {
+      w: def.width,
+      h: def.height,
+      label: def.label,
+      parent: def.parent,
+    });
+    this.lines.push(xml);
+    return id;
+  }
+
+  async addProviderNode(def: ProviderNodeInput): Promise<string> {
+    const { resolveAndPrepare } = await import('../stencils/provider-resolver.js');
+    const { resolved, shapeKey } = await resolveAndPrepare(def.provider, def.shape);
+
+    if (resolved.type === 'builtin') {
+      return this.addStencilNode({
+        library: resolved.library,
+        shape: shapeKey,
+        label: def.label,
+        x: def.x, y: def.y,
+        width: def.width,
+        height: def.height,
+        parent: def.parent,
+        styleOverrides: def.styleOverrides,
+      });
+    }
+
+    return this.addExternalShape({
+      library: resolved.library,
+      entryIndex: parseInt(shapeKey, 10),
+      label: def.label,
+      x: def.x, y: def.y,
+      width: def.width,
+      height: def.height,
+      parent: def.parent,
+    });
+  }
+
+  static async searchShapes(query: string, providerHint?: string): Promise<ShapeSearchResult[]> {
+    const { searchShapes: doSearch } = await import('../stencils/provider-resolver.js');
+    return doSearch(query, providerHint);
+  }
+
+  static async listExternalLibraries(): Promise<string[]> {
+    const { listCachedLibraries } = await import('../stencils/external-loader.js');
+    return listCachedLibraries();
+  }
+
+  static async listExternalShapes(
+    libraryName: string
+  ): Promise<Array<{ index: number; title: string; w: number; h: number }>> {
+    const { loadCachedLibrary, listExternalShapes: listShapes } =
+      await import('../stencils/external-loader.js');
+    const lib = await loadCachedLibrary(libraryName);
+    return listShapes(lib);
   }
 
   /**
