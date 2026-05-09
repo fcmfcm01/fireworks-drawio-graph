@@ -53,6 +53,36 @@ builder.addEdge({ source: svc, target: db, label: 'query', flowType: 'memoryRead
 await builder.toFile('./microservices.drawio');
 ```
 
+## Examples
+
+### Style 1 — Flat Icon
+**Mem0 Memory Architecture** — 4-layer memory system with semantic arrows
+<img src="./assets/samples/mem0-style1.png" width="600" />
+
+### Style 2 — Dark Terminal
+**Tool Call Flow** — Agent tool execution with neon accents
+<img src="./assets/samples/toolcall-style2.png" width="600" />
+
+### Style 3 — Blueprint
+**Microservices Architecture** — Tiered zones with engineering sections
+<img src="./assets/samples/microservices-style3.png" width="600" />
+
+### Style 4 — Notion Clean
+**Agent Memory Types** — Sensory → Procedural memory tiers
+<img src="./assets/samples/memory-types-style4.png" width="500" />
+
+### Style 5 — Glassmorphism
+**Multi-Agent Collaboration** — Frosted cards with delegation flows
+<img src="./assets/samples/multiagent-style5.png" width="600" />
+
+### Style 6 — Claude Official
+**System Architecture** — Warm cream with left-side layer labels
+<img src="./assets/samples/system-arch-style6.png" width="600" />
+
+### Style 7 — OpenAI Official
+**API Integration Flow** — Clean white with green-accented arrows
+<img src="./assets/samples/api-flow-style7.png" width="600" />
+
 ---
 
 ## Style Themes

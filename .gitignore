@@ -7,5 +7,9 @@ dist/
 *.svg
 *.png
 !assets/samples/*.drawio
+!assets/samples/*.png
 coverage/
 .env
+.sisyphus/
+.playwright-mcp/
+agency-agents-zh/

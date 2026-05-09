@@ -1,2 +1,0 @@
-[  142084ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ https://apis.google.com/js/api.js?onload=DrawGapiClientCallback:0
-[  146180ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ https://www.dropbox.com/static/api/2/dropins.js:0

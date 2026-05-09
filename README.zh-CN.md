@@ -52,6 +52,36 @@ builder.addEdge({ source: svc, target: db, label: '查询', flowType: 'memoryRea
 await builder.toFile('./microservices.drawio');
 ```
 
+## 示例
+
+### 样式 1 — Flat Icon
+**Mem0 记忆架构** — 4 层记忆系统，语义化箭头
+<img src="./assets/samples/mem0-style1.png" width="600" />
+
+### 样式 2 — Dark Terminal
+**工具调用流程** — Agent 工具执行，霓虹风格
+<img src="./assets/samples/toolcall-style2.png" width="600" />
+
+### 样式 3 — Blueprint
+**微服务架构** — 分层区域，工程化分区
+<img src="./assets/samples/microservices-style3.png" width="600" />
+
+### 样式 4 — Notion Clean
+**Agent 记忆类型** — 感知 → 程序性记忆层级
+<img src="./assets/samples/memory-types-style4.png" width="500" />
+
+### 样式 5 — Glassmorphism
+**多代理协作** — 毛玻璃卡片，委派流
+<img src="./assets/samples/multiagent-style5.png" width="600" />
+
+### 样式 6 — Claude Official
+**系统架构** — 暖色背景，左侧层级标签
+<img src="./assets/samples/system-arch-style6.png" width="600" />
+
+### 样式 7 — OpenAI Official
+**API 集成流程** — 纯白背景，绿色箭头
+<img src="./assets/samples/api-flow-style7.png" width="600" />
+
 ---
 
 ## 样式主题
