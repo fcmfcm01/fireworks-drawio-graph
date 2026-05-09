@@ -430,9 +430,8 @@ export class DiagramBuilder {
     const parts: string[] = [];
     parts.push('<mxfile host="fireworks-drawio-graph" modified="2024-01-01T00:00:00.000Z" agent="fireworks-drawio-graph" version="1.0.0" type="device">');
     parts.push('  <diagram id="diagram-1" name="Page-1">');
-    // draw.io wraps the mxGraphModel XML in a encoded format,
-    // but also accepts raw mxGraphModel inside <diagram>
-    parts.push('    ' + this.toXml());
+    const xml = this.toXml().replace(/<\?xml[^?]*\?>\s*/g, '');
+    parts.push('    ' + xml);
     parts.push('  </diagram>');
     parts.push('</mxfile>');
     return parts.join('\n');

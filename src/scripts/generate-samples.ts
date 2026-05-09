@@ -16,7 +16,7 @@ import { createAwsArchitectureDiagram } from '../templates/cloud-architecture.js
 import '../stencils/catalogs/aws4.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = resolve(__dirname, '../../docs/samples');
+const OUT_DIR = resolve(__dirname, '../../assets/samples');
 
 function ensureDir(dir: string) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
