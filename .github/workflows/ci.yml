@@ -58,6 +58,16 @@ jobs:
             echo "Version $VER not yet published, proceeding."
           fi
 
+      - name: Debug npm auth
+        if: steps.check.outputs.published == 'false'
+        run: 'echo "Token length: $(echo "$NODE_AUTH_TOKEN" | wc -c)"'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify .npmrc
+        if: steps.check.outputs.published == 'false'
+        run: cat ~/.npmrc
+
       - name: Publish to npm
         if: steps.check.outputs.published == 'false'
         run: npm publish --provenance --access public
