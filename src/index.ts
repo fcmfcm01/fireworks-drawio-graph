@@ -25,6 +25,15 @@ export {
   HORIZONTAL_SPACING, VERTICAL_SPACING, CANVAS_MARGIN
 } from './builder/layout-engine.js';
 
+// Icon system — SVG custom icons for AI/LLM tech stack diagrams
+export {
+  svgToDataUri, buildIconCell, buildIconWithLabel, applyThemeToSvg,
+} from './builder/icon-node.js';
+export type { SvgEncoding, IconNodeConfig } from './builder/icon-node.js';
+
+export { ICON_TEMPLATES, ICON_NAMES } from './icons/ai-icons.js';
+export type { IconName } from './icons/ai-icons.js';
+
 // Utilities
 export { escapeXml, escapeAttrValue, unescapeXml } from './utils/xml-escape.js';
 export { nextId, nextPrefixedId, generateIds, resetIdCounter } from './utils/id-generator.js';
