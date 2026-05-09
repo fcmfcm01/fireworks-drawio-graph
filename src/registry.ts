@@ -19,6 +19,7 @@ const DIAGRAM_TYPES: DiagramTypeInfo[] = [
   { key: 'flowchart', label: 'Flowchart', description: 'Sequential steps: process, decision, data, start/end', hasTemplate: true },
   { key: 'sequence', label: 'Sequence', description: 'Time-ordered messages between participants (lifelines)', hasTemplate: true },
   { key: 'data-flow', label: 'Data Flow', description: 'Data transformation with labeled edges', hasTemplate: true },
+  { key: 'cloud-architecture', label: 'Cloud Architecture', description: 'AWS/Azure/GCP/Alibaba cloud infrastructure with stencil icons', hasTemplate: true },
   { key: 'class-diagram', label: 'Class Diagram', description: 'UML class boxes with attributes/methods', hasTemplate: false },
   { key: 'er-diagram', label: 'ER Diagram', description: 'Entity-Relationship with cardinality', hasTemplate: false },
   { key: 'state-machine', label: 'State Machine', description: 'State transitions with guards and actions', hasTemplate: false },

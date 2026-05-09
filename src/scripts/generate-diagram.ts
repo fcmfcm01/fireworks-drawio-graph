@@ -12,6 +12,13 @@ import { Command } from 'commander';
 import { DiagramBuilder } from '../builder/diagram-builder.js';
 import { getStyleNames } from '../styles/index.js';
 import { formatDiagramTypesList, getDiagramTypeKeys } from '../registry.js';
+import {
+  POPULAR_LIBRARIES,
+  downloadLibrary,
+  listCachedLibraries,
+  loadCachedLibrary,
+  listExternalShapes,
+} from '../stencils/external-loader.js';
 
 const program = new Command();
 
@@ -131,6 +138,95 @@ program
     console.log('Supported diagram types:\n');
     for (const t of formatDiagramTypesList()) {
       console.log(`  ${t}`);
+    }
+  });
+
+program
+  .command('download-libs')
+  .description('Download and manage external draw.io shape libraries')
+  .option('--all', 'Download all popular libraries')
+  .option('--name <lib>', 'Download a specific popular library by name')
+  .option('--url <url>', 'Download from a custom URL')
+  .option('--list', 'List cached libraries')
+  .option('--shapes <lib>', 'List shapes in a cached library')
+  .action(async (opts) => {
+    try {
+      if (opts.list) {
+        const cached = await listCachedLibraries();
+        if (cached.length === 0) {
+          console.log('No cached libraries. Use --name <lib> or --all to download.');
+        } else {
+          console.log('Cached libraries:\n');
+          for (const name of cached) {
+            console.log(`  ${name}`);
+          }
+        }
+        return;
+      }
+
+      if (opts.shapes) {
+        const lib = await loadCachedLibrary(opts.shapes);
+        const shapes = listExternalShapes(lib);
+        if (shapes.length === 0) {
+          console.log(`No shapes found in "${opts.shapes}".`);
+        } else {
+          console.log(`Shapes in "${opts.shapes}" (${shapes.length}):\n`);
+          for (const s of shapes) {
+            console.log(`  [${s.index}] ${s.title} (${s.w}x${s.h})`);
+          }
+        }
+        return;
+      }
+
+      if (opts.url) {
+        const name = opts.url.split('/').pop()?.replace('.xml', '') ?? 'custom';
+        console.log(`Downloading from ${opts.url}...`);
+        const lib = await downloadLibrary(opts.url, name);
+        console.log(`Downloaded ${name} (${lib.entries.length} shapes) → cache`);
+        return;
+      }
+
+      if (opts.name) {
+        const info = POPULAR_LIBRARIES[opts.name];
+        if (!info) {
+          console.error(`Unknown library: ${opts.name}`);
+          console.error(`Available: ${Object.keys(POPULAR_LIBRARIES).join(', ')}`);
+          process.exit(1);
+        }
+        console.log(`Downloading ${opts.name}...`);
+        const lib = await downloadLibrary(info.url, opts.name);
+        console.log(`Downloaded ${opts.name} (${lib.entries.length} shapes) → cache`);
+        return;
+      }
+
+      if (opts.all) {
+        let succeeded = 0;
+        let failed = 0;
+        for (const [name, info] of Object.entries(POPULAR_LIBRARIES)) {
+          try {
+            console.log(`Downloading ${name}...`);
+            const lib = await downloadLibrary(info.url, name);
+            console.log(`  ✓ ${name} (${lib.entries.length} shapes)`);
+            succeeded++;
+          } catch (err) {
+            console.error(`  ✗ ${name}: ${err instanceof Error ? err.message : String(err)}`);
+            failed++;
+          }
+        }
+        console.log(`\nDone: ${succeeded} succeeded, ${failed} failed.`);
+        return;
+      }
+
+      console.log('Popular draw.io shape libraries:\n');
+      for (const [name, info] of Object.entries(POPULAR_LIBRARIES)) {
+        console.log(`  ${name.padEnd(24)} ${info.description}`);
+      }
+      console.log('\nUse --name <lib> to download a specific library.');
+      console.log('Use --all to download all popular libraries.');
+
+    } catch (err) {
+      console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
     }
   });
 
